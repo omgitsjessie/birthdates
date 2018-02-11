@@ -64,7 +64,7 @@ plot(birthscomp2)
 #remove weekday trend, look at month trend.
 births_ts3 <- births_ts2 - birthscomp2$seasonal
 plot(births_ts3)
-births_ts4 <- ts(births_ts3, frequency = 30, start = c(1,1))
+births_ts4 <- ts(births_ts3, frequency = 30.4, start = c(1,1))
 births_ts4_decomp <- decompose(births_ts4)
 plot(births_ts4_decomp)
 #Separate out annual trend, that's what you want (but just one cycle).
@@ -77,9 +77,16 @@ plot(births_ts6_decomp)
 plot(births_ts6_decomp$trend)
 
 #annual trend in birthrate, each year
-#TODO - plot births_ts6_decomp[1:365, "seasonal"]
+annual_birthrates <- births_ts6_decomp$seasonal[1:365] %>% data.frame()
+names(annual_birthrates) <- c("effect")
+annual_birthrates$date <- seq(as.Date("2018/1/1"), by = "day", length.out = 365)
+ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1) + 
+  xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004") + 
+  theme_bw()
+#TODO - Add annotations about dates
+#TODO - remove year from the x-axis since it's over many years.
 
-#monthly trends in birthrate, each month
+ #monthly trends in birthrate, each month
 #TODO - plot births_ts4_decomp[1:30, "seasonal"]
 
 #weekly trends in birthrate, each week
