@@ -82,15 +82,29 @@ names(annual_birthrates) <- c("effect")
 annual_birthrates$date <- seq(as.Date("2018/1/1"), by = "day", length.out = 365)
 ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1) + 
   xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004") + 
+  scale_x_date(date_labels = "%B", date_minor_breaks = "1 month") + 
   theme_bw()
-#TODO - Add annotations about dates
-#TODO - remove year from the x-axis since it's over many years.
 
- #monthly trends in birthrate, each month
-#TODO - plot births_ts4_decomp[1:30, "seasonal"]
+#monthly trends in birthrate, each month
+monthly_birthrates <- births_ts4_decomp$seasonal[1:30] %>% data.frame()
+names(monthly_birthrates) <- c("effect")
+monthly_birthrates$date <- seq(1, by = 1, length.out = 30)
+ggplot(monthly_birthrates, aes(date, effect)) + geom_smooth(span = 0.5) + 
+  xlab("") + ylab("Birth Trend") + ggtitle("Monthly Birthrate Trend, 1994-2004") + 
+  scale_x_continuous(minor_breaks = c(5, 15, 25)) + 
+  theme_bw()
+#TODO - does this make sense?  valleys @ 4th & 26th of each month?
+
 
 #weekly trends in birthrate, each week
-#TODO - plot birthscomp2[1:7, "seasonal"]
+weekly_birthrates <- birthscomp2$seasonal[1:7] %>% data.frame()
+names(weekly_birthrates) <- c("effect")
+weekly_birthrates$date <- seq(as.Date("1994/1/1"), by = "day", length.out = 7)
+weekly_birthrates$date <- c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth() + 
+  xlab("") + ylab("Birth Trend") + ggtitle("Weekly Birthrate Trend, 1994-2004") + 
+  scale_x_date(date_labels = "%A", date_breaks = "1 day") + 
+  theme_bw()
 
 #Specifically looking at annual trend in birthdate, shift the plot so that it
 #becomes annual trends in "conception date".  
