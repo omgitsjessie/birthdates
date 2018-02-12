@@ -89,7 +89,7 @@ ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1, se = FALS
   #Christmas 12/24 - 12/26
   #Thanksgiving 11/22 - 11/29
   #Labor Day 9/1 - 9/7
-  #4th of July 9/4
+  #4th of July 7/4
   #Memorial Day 5/24 - 5/30
   annotate("rect", xmin = as.Date("2018-01-01"), xmax = as.Date("2018-01-03"), ymin = -1500, ymax = -750, alpha = 0.2) +
   annotate("text", x=as.Date("2018-01-02"), y=-1500, label="New Year's") +
@@ -100,10 +100,10 @@ ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1, se = FALS
   annotate("rect", xmin = as.Date("2018-09-01"), xmax = as.Date("2018-09-07"), ymin = 200, ymax = 450, alpha = 0.2) + 
   annotate("text", x=as.Date("2018-09-05"), y=125, label="Labor Day") +
   annotate("rect", xmin = as.Date("2018-11-22"), xmax = as.Date("2018-11-29"), ymin = -625, ymax = -375, alpha = 0.2) +  
-  annotate("text", x=as.Date("2018-11-27"), y=-700, label="Thanksgiving")
+  annotate("text", x=as.Date("2018-11-27"), y=-700, label="Thanksgiving") +
+  annotate("rect", xmin = as.Date("2018-12-24"), xmax = as.Date("2018-12-26"), ymin = -500, ymax = -250, alpha = 0.2) +  
+  annotate("text", x=as.Date("2018-12-25"), y=-550, label="Christmas")
   
-  
-
 #monthly trends in birthrate, each month
 monthly_birthrates <- births_ts4_decomp$seasonal[1:30] %>% data.frame()
 names(monthly_birthrates) <- c("effect")
@@ -134,9 +134,38 @@ ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth() +
 #Christmas 12/24 - 12/26
 #Thanksgiving 11/22 - 11/29
 #Labor Day 9/1 - 9/7
-#4th of July 9/4
+#4th of July 7/4
 #Memorial Day 5/24 - 5/30
+
 #TODO - smooth over those bands.
+#Add an indicator variable to annual_birthrates to indicate holiday band.
+annual_birthrates$holiday <- NA
+for (i in 1:nrow(annual_birthrates)) {
+  if (annual_birthrates[i, "date"] >= as.Date("2018-01-01") && annual_birthrates[i, "date"] <= as.Date("2018-01-03")) {
+    annual_birthrates[i, "holiday"] <- 1 #New Year's
+  }
+  if (annual_birthrates[i, "date"] >= as.Date("2018-05-24") && annual_birthrates[i, "date"] <= as.Date("2018-05-30")) {
+    annual_birthrates[i, "holiday"] <- 1 #Memorial Day
+  }
+  if (annual_birthrates[i, "date"] >= as.Date("2018-07-04") && annual_birthrates[i, "date"] <= as.Date("2018-07-06")) {
+    annual_birthrates[i, "holiday"] <- 1 #July 4th
+  }
+  if (annual_birthrates[i, "date"] >= as.Date("2018-09-01") && annual_birthrates[i, "date"] <= as.Date("2018-09-07")) {
+    annual_birthrates[i, "holiday"] <- 1 #Labor Day
+  }
+  if (annual_birthrates[i, "date"] >= as.Date("2018-11-22") && annual_birthrates[i, "date"] <= as.Date("2018-11-29")) {
+    annual_birthrates[i, "holiday"] <- 1 #Thanksgiving
+  }
+  if (annual_birthrates[i, "date"] >= as.Date("2018-12-24") && annual_birthrates[i, "date"] <= as.Date("2018-12-26")) {
+    annual_birthrates[i, "holiday"] <- 1 #Christmas
+  }
+}
+holidays <- data.frame("holiday" = c("New Year", "Memorial Day", "July 4th", "Labor Day", "Thanksgiving", "Christmas"), 
+                       "StartDate" = c("2018-01-01", "2018-05-24", "2018-07-04", "2018-09-01", "2018-11-22", "2018-12-24"), 
+                       "EndDate" = c("2018-01-03", "2018-05-30", "2018-07-06", "2018-09-07", "2018-11-29", "2018-12-26"))
+#TODO - for each holiday segment identify a start and a stop with lags
+#TODO - for each holiday segment do a moving average from one day before to one day after.  Remove NYE entirely.
+
 
 #TODO - move everything back 280 days to look at conception trends.
 
