@@ -15,6 +15,7 @@ US_births_1994.2003_CDC_NCHS$month_day <- paste0(US_births_1994.2003_CDC_NCHS$mo
                                           US_births_1994.2003_CDC_NCHS$date_of_month) %>%
                                               as.Date("%m-%d")
 
+#tbh I don't use this data.  recreate with these data next?
 US_births_2000.2014_SSA$date <- paste0(US_births_2000.2014_SSA$month, "-", 
                                        US_births_2000.2014_SSA$date_of_month, "-",
                                        US_births_2000.2014_SSA$year)
@@ -80,10 +81,28 @@ plot(births_ts6_decomp$trend)
 annual_birthrates <- births_ts6_decomp$seasonal[1:365] %>% data.frame()
 names(annual_birthrates) <- c("effect")
 annual_birthrates$date <- seq(as.Date("2018/1/1"), by = "day", length.out = 365)
-ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1) + 
+ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1, se = FALSE) + 
   xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004") + 
   scale_x_date(date_labels = "%B", date_minor_breaks = "1 month") + 
-  theme_bw()
+  theme_bw() + 
+  #Annotate holidays in US between 1994-2004
+  #Christmas 12/24 - 12/26
+  #Thanksgiving 11/22 - 11/29
+  #Labor Day 9/1 - 9/7
+  #4th of July 9/4
+  #Memorial Day 5/24 - 5/30
+  annotate("rect", xmin = as.Date("2018-01-01"), xmax = as.Date("2018-01-03"), ymin = -1500, ymax = -750, alpha = 0.2) +
+  annotate("text", x=as.Date("2018-01-02"), y=-1500, label="New Year's") +
+  annotate("rect", xmin = as.Date("2018-05-24"), xmax = as.Date("2018-05-30"), ymin = -250, ymax = 0, alpha = 0.2) +
+  annotate("text", x=as.Date("2018-05-27"), y=-375, label="Memorial Day") +
+  annotate("rect", xmin = as.Date("2018-07-04"), xmax = as.Date("2018-07-06"), ymin = 125, ymax = 375, alpha = 0.2) + 
+  annotate("text", x=as.Date("2018-07-05"), y=50, label="4th of July") +
+  annotate("rect", xmin = as.Date("2018-09-01"), xmax = as.Date("2018-09-07"), ymin = 200, ymax = 450, alpha = 0.2) + 
+  annotate("text", x=as.Date("2018-09-05"), y=125, label="Labor Day") +
+  annotate("rect", xmin = as.Date("2018-11-22"), xmax = as.Date("2018-11-29"), ymin = -625, ymax = -375, alpha = 0.2) +  
+  annotate("text", x=as.Date("2018-11-27"), y=-700, label="Thanksgiving")
+  
+  
 
 #monthly trends in birthrate, each month
 monthly_birthrates <- births_ts4_decomp$seasonal[1:30] %>% data.frame()
@@ -110,3 +129,14 @@ ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth() +
 #becomes annual trends in "conception date".  
   #Consider smoothing with moving average to  avoid ideas like
   #"nobody gets busy 280 days before labor day weekend"
+
+#Identify candidates for scheduled holidays impacting birthrate in US between 1994-2004
+#Christmas 12/24 - 12/26
+#Thanksgiving 11/22 - 11/29
+#Labor Day 9/1 - 9/7
+#4th of July 9/4
+#Memorial Day 5/24 - 5/30
+#TODO - smooth over those bands.
+
+#TODO - move everything back 280 days to look at conception trends.
+
