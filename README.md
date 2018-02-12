@@ -1,4 +1,8 @@
-# U.S. Births
+# Visualizing Valentine's Day: Jessie Wastes a Weekend
+
+Since fivethirtyeight.com did such a great article on birthdates, and some monthly effects related to superstition, I thought it would be cute to shift those data backwards and look at trends around conception dates.  Are there more Valentine babies?  Anything else going on that's interesting?
+
+### U.S. Birth Data - from fivethirtyeight.com
 
 This folder contains data behind the story [Some People Are Too Superstitious To Have A Baby On Friday The 13th](http://fivethirtyeight.com/features/some-people-are-too-superstitious-to-have-a-baby-on-friday-the-13th/).
 
@@ -19,9 +23,6 @@ Header | Definition
 `births` | Number of births
 
 
-# Visualizing Valentine's Day: Jessie Wastes a Weekend
-
-Since fivethirtyeight.com did such a great article on birthdates, and some monthly effects related to superstition, I thought it would be cute to shift those data backwards and look at trends around conception dates.  Are there more Valentine babies?  Anything else going on that's interesting?
 
 ## Step 1: What are we even looking at?
 
