@@ -1,5 +1,6 @@
 library(ggplot2)
 library(dplyr)
+library(plyr)
 library(lubridate)
 
 #Read in birthdate data
@@ -24,39 +25,33 @@ US_births_2000.2014_SSA$date <- as.Date(US_births_2000.2014_SSA$date, "%m-%d-%Y"
 
 #Look at time series over the ten years
 ggplot(US_births_1994.2003_CDC_NCHS, aes(date, births)) + geom_point() +
-  xlab("") + ylab("births")
+  xlab("Time") + ylab("Births") + ggtitle("US Births per day, from 1994 to 2004") + 
+  theme_bw()
+
+#rename factor levels for day of week.
+US_births_1994.2003_CDC_NCHS$day_of_week <- as.factor(US_births_1994.2003_CDC_NCHS$day_of_week)
+levels(US_births_1994.2003_CDC_NCHS$day_of_week) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
 #collapse to be over a year - scatter looks goofy; look at days of week!
-ggplot(US_births_1994.2003_CDC_NCHS, aes(month_day, births)) + geom_point(aes(color = factor(day_of_week))) +
-  xlab("") + ylab("births") + ggtitle("Ten years of births, by month") + 
+ggplot(US_births_1994.2003_CDC_NCHS, aes(month_day, births)) + geom_point(aes(color = day_of_week)) +
+  xlab("Month") + ylab("Births") + ggtitle("Ten years of births, by month") + 
+  scale_x_date(date_labels = "%B", date_breaks = "1 month") + 
   theme_bw()
 
 #Even over ten years, there's a clear day-of-week trend where births aren't 
 #scheduled on weekends.  And probably some non-weekend holidays.  
-
-#Calculate avg conception dates
-# US_births_1994.2003_CDC_NCHS$conception <- US_births_1994.2003_CDC_NCHS$date - 280
-# US_births_1994.2003_CDC_NCHS$conception_month <- month(as.POSIXlt(US_births_1994.2003_CDC_NCHS$conception, format="%Y-%m-%d"))
-# US_births_1994.2003_CDC_NCHS$conception_day <- day(as.POSIXlt(US_births_1994.2003_CDC_NCHS$conception, format="%Y-%m-%d"))
-# 
-# US_births_1994.2003_CDC_NCHS$conception_month_day <- paste0(US_births_1994.2003_CDC_NCHS$conception_month, "-", 
-#                                                  US_births_1994.2003_CDC_NCHS$conception_day) %>%
-#                                           as.Date("%m-%d")
-
-# avg_conceptions <- US_births_1994.2003_CDC_NCHS %>%
-#   group_by(conception_month_day) %>%
-#   summarise(avg_conceptions = mean(births))
-
 avg_births <- US_births_1994.2003_CDC_NCHS %>%
   group_by(month_day) %>%
   summarise(avg_births = mean(births))
 
 #Plot showing estimated conception dates collapsed to be over a year
 #without removing weekly & monthly scheduling artifacts
-ggplot(avg_conceptions, aes(conception_month_day, avg_conceptions)) + geom_line() +
-  xlab("") + ylab("conceptions") + ggtitle("Avg Conception Dates") + 
+ggplot(avg_births, aes(month_day, avg_births)) + geom_line() + 
+  xlab("") + ylab("conceptions") + ggtitle("Avg Birth Dates, collapsed over a year") + 
+  scale_x_date(date_labels = "%B", date_breaks = "1 month") + 
   theme_bw()
 
-#TODO: Repeat time series, but with uncollapsed data.
+#Look at time series decomposition effects due to different seasonality.
 #remove weekday trend.
 births_ts2 <- ts(US_births_1994.2003_CDC_NCHS$births, frequency = 7, start = c(1,1))
 plot.ts(births_ts2)
@@ -83,7 +78,7 @@ names(annual_birthrates) <- c("effect")
 annual_birthrates$date <- seq(as.Date("2018/1/1"), by = "day", length.out = 365)
 ggplot(annual_birthrates, aes(date, effect)) + geom_smooth(span = 0.1, se = FALSE) + 
   xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004") + 
-  scale_x_date(date_labels = "%B", date_minor_breaks = "1 month") + 
+  scale_x_date(date_labels = "%B", date_breaks = "1 month") + 
   theme_bw() + 
   #Annotate holidays in US between 1994-2004
   #Christmas 12/24 - 12/26
@@ -119,9 +114,8 @@ ggplot(monthly_birthrates, aes(date, effect)) + geom_smooth(span = 0.5) +
 weekly_birthrates <- birthscomp2$seasonal[1:7] %>% data.frame()
 names(weekly_birthrates) <- c("effect")
 weekly_birthrates$date <- seq(as.Date("1994/1/1"), by = "day", length.out = 7)
-weekly_birthrates$date <- c("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
-ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth() + 
-  xlab("") + ylab("Birth Trend") + ggtitle("Weekly Birthrate Trend, 1994-2004") + 
+ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth(se = FALSE) + 
+  xlab("Day of Week") + ylab("Birth Trend") + ggtitle("Weekly Birthrate Trend, 1994-2004") + 
   scale_x_date(date_labels = "%A", date_breaks = "1 day") + 
   theme_bw()
 
@@ -149,12 +143,12 @@ for (i in 1:nrow(holidays)) {
 
 #Plot annual_birthrate trend again, using set with removed holiday scheduling effect.
 ggplot(annual_birthrates_noscheduling, aes(date, effect)) + geom_smooth(span = 0.1, se = FALSE) + 
-  xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004.  Holiday Birth Scheduling Effects Removed.") + 
-  scale_x_date(date_labels = "%B", date_minor_breaks = "1 month") + 
+  xlab("Month") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004.  Holiday Birth Scheduling Effects Removed.") + 
+  scale_x_date(date_labels = "%B", date_breaks = "1 month") + 
   theme_bw()
 
 
-#TODO - move everything back 280 days to look at conception trends.
+#Shift everything back 280 days to look at conception trends.
 #Split data into columns
 conception_date <- annual_birthrates_noscheduling$date
 birth_effect <- annual_birthrates_noscheduling$effect
@@ -171,7 +165,7 @@ names(annual_conception) <- c("date", "effect")
 
 #Plot again. Now you have conception trends!
 ggplot(annual_conception, aes(date, effect)) + geom_smooth(span = 0.1, se = FALSE) + 
-  xlab("") + ylab("Conception Trend") + ggtitle("Annual Conception Trend, using birth data from 1994-2004.") + 
+  xlab("Month") + ylab("Conception Trend") + ggtitle("Annual Conception Trend, using birth data from 1994-2004.") + 
   scale_x_date(date_labels = "%B", date_breaks = "1 month") + 
   theme_bw()
 
