@@ -138,33 +138,30 @@ ggplot(weekly_birthrates, aes(date, effect)) + geom_smooth() +
 #Memorial Day 5/24 - 5/30
 
 #TODO - smooth over those bands.
-#Add an indicator variable to annual_birthrates to indicate holiday band.
-annual_birthrates$holiday <- NA
-for (i in 1:nrow(annual_birthrates)) {
-  if (annual_birthrates[i, "date"] >= as.Date("2018-01-01") && annual_birthrates[i, "date"] <= as.Date("2018-01-03")) {
-    annual_birthrates[i, "holiday"] <- 1 #New Year's
-  }
-  if (annual_birthrates[i, "date"] >= as.Date("2018-05-24") && annual_birthrates[i, "date"] <= as.Date("2018-05-30")) {
-    annual_birthrates[i, "holiday"] <- 1 #Memorial Day
-  }
-  if (annual_birthrates[i, "date"] >= as.Date("2018-07-04") && annual_birthrates[i, "date"] <= as.Date("2018-07-06")) {
-    annual_birthrates[i, "holiday"] <- 1 #July 4th
-  }
-  if (annual_birthrates[i, "date"] >= as.Date("2018-09-01") && annual_birthrates[i, "date"] <= as.Date("2018-09-07")) {
-    annual_birthrates[i, "holiday"] <- 1 #Labor Day
-  }
-  if (annual_birthrates[i, "date"] >= as.Date("2018-11-22") && annual_birthrates[i, "date"] <= as.Date("2018-11-29")) {
-    annual_birthrates[i, "holiday"] <- 1 #Thanksgiving
-  }
-  if (annual_birthrates[i, "date"] >= as.Date("2018-12-24") && annual_birthrates[i, "date"] <= as.Date("2018-12-26")) {
-    annual_birthrates[i, "holiday"] <- 1 #Christmas
-  }
-}
+#Create a table indicating holiday intervals that we will smooth over.
 holidays <- data.frame("holiday" = c("New Year", "Memorial Day", "July 4th", "Labor Day", "Thanksgiving", "Christmas"), 
                        "StartDate" = c("2018-01-01", "2018-05-24", "2018-07-04", "2018-09-01", "2018-11-22", "2018-12-24"), 
                        "EndDate" = c("2018-01-03", "2018-05-30", "2018-07-06", "2018-09-07", "2018-11-29", "2018-12-26"))
-#TODO - for each holiday segment identify a start and a stop with lags
-#TODO - for each holiday segment do a moving average from one day before to one day after.  Remove NYE entirely.
+holidays$duration <- as.Date(holidays$EndDate) - as.Date(holidays$StartDate) + 1
+
+#Make a copy of annual_birthrates so you don't throw away data you want later.
+annual_birthrates_noscheduling <- annual_birthrates
+
+#For each holiday segment, remove effect data during that holiday. 
+for (i in 1:nrow(holidays)) {
+  for (j in 1:nrow(annual_birthrates_noscheduling)) {
+    if (annual_birthrates_noscheduling[j, "date"] >= as.Date(holidays[i, "StartDate"]) && 
+        annual_birthrates_noscheduling[j, "date"] <= as.Date(holidays[i, "EndDate"])) {
+          annual_birthrates_noscheduling[j, "effect"] <- NA
+    }
+  }
+}
+
+#Plot again, using data with removed effect data.
+ggplot(annual_birthrates_noscheduling, aes(date, effect)) + geom_smooth(span = 0.1, se = FALSE) + 
+  xlab("") + ylab("Birth Trend") + ggtitle("Annual Birthrate Trend, 1994-2004.  Holidays Removed.") + 
+  scale_x_date(date_labels = "%B", date_minor_breaks = "1 month") + 
+  theme_bw()
 
 
 #TODO - move everything back 280 days to look at conception trends.
