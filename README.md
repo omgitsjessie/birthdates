@@ -28,11 +28,11 @@ Header | Definition
 
 My first try was to look at the time series of birth data, over the ten years of CDC data. Looking at the point data, there's something strange with how the data points have a very clear separation. 
 
-![Birthdates over ten years](US Births per day from 1994 to 2004.png)
+![Birthdates over ten years](img/US Births per day from 1994 to 2004.png?raw=true)
 
 A short consultation with one of my friends that has a child solved that riddle; it's totally normal for doctors to only schedule births for weekdays. Looking at that same plot and grouping by weekday writes off the mystery!
 
-![Birthdates over ten years, collapsed to show annual trend. Grouped by weekday.](Ten years of births by month.png)
+![Birthdates over ten years, collapsed to show annual trend. Grouped by weekday.](img/Ten years of births by month.png)
 
 If you look closely, you see a few clusters of Mondays lurking down in our weekend strata--visual inspection shows that these are happening around Labor Day & Memorial Day.  On top of that, we have a Thursday cluster down there, on Thanksgiving! There are known weekday trends; fivethirtyeight.com identified a few of the monthly trends--but what we're really after is conception data.  Since scheduling around holidays and weekends is not a factor that is likely to impact conception timing, we need to de-trend our data.  After all, we may have fewer births on Labor Days, but that is likely related more to scheduling effects than fewer people conceiving 9 months before Labor Day.  Let's decompose our signal to isolate out weekly, monthly, and annual effects.  Enter: Time Series!
 
@@ -52,11 +52,11 @@ plot(birthscomp2)
 births_ts3 <- births_ts2 - birthscomp2$seasonal
 plot(births_ts3)
 ```
-![Birthdate time series, decomposed to see weekly trend.](ts decomposition - removing weekday trend.png)
+![Birthdate time series, decomposed to see weekly trend.](img/ts decomposition - removing weekday trend.png)
 
 This is a standard decomposition plot.  With ten years of observations, this one is extremely dense.  R's ts package can identify and remove the weekly signal -- the 'trend' plot shows the clearer patterns for birth rates after removing the weekly effect.
 
-![Birthdate time series, with weekly trend removed.](Birthdate ts with weekly trend removed.png)
+![Birthdate time series, with weekly trend removed.](img/Birthdate ts with weekly trend removed.png)
 
 With that weekly trend removed, we can easily see that there is annual repetition.  But before we get there, we will Next, look for and remove any evident monthly trends.  This should catch items such as avoiding Friday the 13th, identified in fivethirtyeight's article.  
 
@@ -66,7 +66,7 @@ births_ts4 <- ts(births_ts3, frequency = 30.4, start = c(1,1))
 births_ts4_decomp <- decompose(births_ts4)
 plot(births_ts4_decomp)
 ```
-![Birthdate time series, with monthly trend removed.](Birthdate time series with monthly trend removed.png)
+![Birthdate time series, with monthly trend removed.](img/Birthdate time series with monthly trend removed.png)
 
 Finally, isolate out the annual trend over time.  This is likely to show effects of birthrates on holidays.  Similar to how doctors avoid scheduling on weekends, some holidays lead to dates with fewer scheduled births year-over-year. Worth noting--lower birth rates on annual holidays like Memorial Day or Thanksgiving are unlikely to have been part of a conception plan, so now we'll go back into our birthdate effect data, and remove birthdate effect data falling on those holidays.  
 
@@ -79,21 +79,21 @@ births_ts6 <- ts(births_ts5, frequency = 365.25, start = c(1,1))
 births_ts6_decomp <- decompose(births_ts6)
 plot(births_ts6_decomp)
 ```
-![Birthdate time series, with annual trend removed.](Birthdate decomposition with annual trend removed.png)
+![Birthdate time series, with annual trend removed.](img/Birthdate decomposition with annual trend removed.png)
 
 One interesting thing to look at in this decomposition is the trend over ten years -- we can see the rough fall and rise in birth rates over time.  Looking at one cycle of that annual trend, we can see the dips in our smoothed curve representing scheduling preferences over major holidays.
 
-![Annual Birthrate Trend, without weekday or monthly trends.](Annual birthrate trend without weekday or monthly trends.png)
+![Annual Birthrate Trend, without weekday or monthly trends.](img/Annual birthrate trend without weekday or monthly trends.png)
 
 
 ## Step 3: Visualize Conception (AKA: Conception Inception)
 
 Re-plotting these data after we remove the effect around scheduled holidays gives us a reasonable representation of birth data, in a fictional universe where there are no holiday or weekend preferences by hospitals or new parents surrounding birth scheduling.  
 
-![Annual Birthrate Trend, without weekday, monthly, or holiday birth-scheduling trends.](Annual birthrate trend with scheduling effects removed.png)
+![Annual Birthrate Trend, without weekday, monthly, or holiday birth-scheduling trends.](img/Annual birthrate trend with scheduling effects removed.png)
 
 From this plot, it's easy enough to rearrange our data so that it takes into account the average gestational period of 280 days, and demonstrates the average conception periods that would have resulted in the annual birth date trends that we saw between 1994 and 2004.  
 
-![Annual Conception Trend, without weekday, monthly, or holiday birth-scheduling trends.](Annual conception trend.png)
+![Annual Conception Trend, without weekday, monthly, or holiday birth-scheduling trends.](img/Annual conception trend.png)
 
 Immediately visible are two local maxima: Valentine's Day and St. Patrick's Day!  While not a statistical confirmation of the romantic evenings associated with both holidays, it's enough that I'm comfortable feeling a little smug about my initial feelings about conception trends on Valentine's Day.   
