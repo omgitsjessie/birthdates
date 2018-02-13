@@ -28,7 +28,10 @@ Header | Definition
 
 My first try was to look at the time series of birth data, over the ten years of CDC data. Looking at the point data, there's something strange with how the data points have a very clear separation. 
 
-![Birthdates over ten years](img/US Births per day from 1994 to 2004.png?raw=true)
+<p align="center">
+  <img src="https://github.com/omgitsjessie/birthdates/blob/master/img/US%20Births%20per%20day%20from%201994%20to%202004.png?raw=true" alt="Birthdates over ten years"/>
+</p>
+
 
 A short consultation with one of my friends that has a child solved that riddle; it's totally normal for doctors to only schedule births for weekdays. Looking at that same plot and grouping by weekday writes off the mystery!
 
